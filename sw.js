@@ -1,4 +1,4 @@
-const CACHE_NAME = "zbbt-v1.0";
+const CACHE_NAME = "zbbt-v1.1";
 
 // 安装时预缓存核心资源
 const PRECACHE_URLS = [
