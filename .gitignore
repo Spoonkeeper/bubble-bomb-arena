@@ -38,3 +38,6 @@ tools/实践环节心得报告_许维金.docx
 # Local tool caches
 .tools/
 node_modules/
+
+# Git worktrees
+.worktrees/
