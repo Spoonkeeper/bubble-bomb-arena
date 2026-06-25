@@ -8,6 +8,7 @@ const ACTION_CODES = ["BOMB", "ULTIMATE"];
  * Used by Task 5 to decide whether to create a TouchInputRouter.
  */
 export function isMobileDevice() {
+  if (typeof window === "undefined") return false;
   return (
     "ontouchstart" in window ||
     navigator.maxTouchPoints > 0 ||

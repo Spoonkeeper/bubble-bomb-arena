@@ -6552,7 +6552,7 @@ Object.assign(__bundle, { MapSelectScene });
 
 // scenes/GameScene.js
 {
-const { createGameTextures, preloadCustomHeroAssets, ENEMY_TYPES, ENERGY_ORB_CONFIG, GAME_CONFIG, HEROES, ITEM_TYPES, SPAWN_POINTS, getMapConfig, AISystem, BombSystem, ExplosionSystem, HeroAbilitySystem, ItemSystem, MapSystem, MeteorSystem, PlayerSystem, PortalSystem, UISystem, CombatantRegistry, KeyboardInputRouter, createInputProfiles, normalizeMatchConfig, GAME_TEXT, getHeroDisplay, getItemDisplay, MAP_LEGEND, STAT_LABELS, addPanelFrame, addTechOverlay, preloadTechUi, beginSceneTransition, resetSceneTransition } = __bundle;
+const { createGameTextures, preloadCustomHeroAssets, ENEMY_TYPES, ENERGY_ORB_CONFIG, GAME_CONFIG, HEROES, ITEM_TYPES, SPAWN_POINTS, getMapConfig, AISystem, BombSystem, ExplosionSystem, HeroAbilitySystem, ItemSystem, MapSystem, MeteorSystem, PlayerSystem, PortalSystem, UISystem, CombatantRegistry, KeyboardInputRouter, createInputProfiles, TouchInputRouter, isMobileDevice, normalizeMatchConfig, GAME_TEXT, getHeroDisplay, getItemDisplay, MAP_LEGEND, STAT_LABELS, addPanelFrame, addTechOverlay, preloadTechUi, beginSceneTransition, resetSceneTransition } = __bundle;
 const PANEL_COLORS = {
   shell: 0x070b10,
   card: 0x11151b,
@@ -6570,6 +6570,12 @@ const HERO_PORTRAIT_SCALES = {
   ember: 0.64,
   volt: 0.6,
   wind: 0.6,
+};
+
+const TOUCH_PROFILE = {
+  movement: { left: ["LEFT"], right: ["RIGHT"], up: ["UP"], down: ["DOWN"] },
+  bomb: ["BOMB"],
+  ultimate: ["ULTIMATE"],
 };
 
 class GameScene extends Phaser.Scene {
@@ -6604,8 +6610,15 @@ class GameScene extends Phaser.Scene {
     this.bombSystem.setExplosionSystem(this.explosionSystem);
 
     this.registry = new CombatantRegistry();
-    this.inputRouter = new KeyboardInputRouter(this.input.keyboard);
-    const inputProfiles = createInputProfiles(this.matchConfig.playerCount);
+    const mobile = isMobileDevice();
+    if (mobile) {
+      this.inputRouter = new TouchInputRouter(this);
+    } else {
+      this.inputRouter = new KeyboardInputRouter(this.input.keyboard);
+    }
+    const inputProfiles = mobile
+      ? Array(this.matchConfig.playerCount).fill(TOUCH_PROFILE)
+      : createInputProfiles(this.matchConfig.playerCount);
     this.playerSystems = this.matchConfig.playerHeroes.map((heroId, index) => {
       const player = new PlayerSystem(this, this.mapSystem, this.bombSystem, this.itemSystem, heroId, {
         ownerId: `player-${index + 1}`,
