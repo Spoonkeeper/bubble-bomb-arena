@@ -7426,5 +7426,15 @@ const config = {
 
 window.ZBBT_CONFIG = GAME_CONFIG;
 window.ZBBT_GAME = new Phaser.Game(config);
+
+// 注册 Service Worker（PWA 离线支持）
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").then(
+      (reg) => console.log("[PWA] SW registered:", reg.scope),
+      (err) => console.warn("[PWA] SW registration failed:", err)
+    );
+  });
+}
 }
 })();

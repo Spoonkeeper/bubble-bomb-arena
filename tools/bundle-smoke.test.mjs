@@ -15,6 +15,7 @@ test("game bundle evaluates and bootstraps Phaser config", () => {
     clearTimeout,
     window: {},
     document: {},
+    navigator: {},
     Phaser: {
       AUTO: "AUTO",
       Scene: class FakeScene {},
