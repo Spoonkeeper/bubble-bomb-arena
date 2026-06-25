@@ -15,6 +15,8 @@ import { PortalSystem } from "../systems/PortalSystem.js";
 import { UISystem } from "../systems/UISystem.js";
 import { CombatantRegistry } from "../multiplayer/CombatantRegistry.js";
 import { KeyboardInputRouter, createInputProfiles } from "../multiplayer/KeyboardInputRouter.js";
+import { TouchInputRouter, isMobileDevice } from "../mobile/TouchInputRouter.js";
+import { MobileUI } from "../mobile/MobileUI.js";
 import { normalizeMatchConfig } from "../multiplayer/MatchConfig.js";
 import {
   GAME_TEXT,
@@ -43,6 +45,12 @@ const HERO_PORTRAIT_SCALES = {
   ember: 0.64,
   volt: 0.6,
   wind: 0.6,
+};
+
+const TOUCH_PROFILE = {
+  movement: { left: ["LEFT"], right: ["RIGHT"], up: ["UP"], down: ["DOWN"] },
+  bomb: ["BOMB"],
+  ultimate: ["ULTIMATE"],
 };
 
 export class GameScene extends Phaser.Scene {
@@ -77,8 +85,15 @@ export class GameScene extends Phaser.Scene {
     this.bombSystem.setExplosionSystem(this.explosionSystem);
 
     this.registry = new CombatantRegistry();
-    this.inputRouter = new KeyboardInputRouter(this.input.keyboard);
-    const inputProfiles = createInputProfiles(this.matchConfig.playerCount);
+    const mobile = isMobileDevice();
+    if (mobile) {
+      this.inputRouter = new TouchInputRouter(this);
+    } else {
+      this.inputRouter = new KeyboardInputRouter(this.input.keyboard);
+    }
+    const inputProfiles = mobile
+      ? Array(this.matchConfig.playerCount).fill(TOUCH_PROFILE)
+      : createInputProfiles(this.matchConfig.playerCount);
     this.playerSystems = this.matchConfig.playerHeroes.map((heroId, index) => {
       const player = new PlayerSystem(this, this.mapSystem, this.bombSystem, this.itemSystem, heroId, {
         ownerId: `player-${index + 1}`,
@@ -128,6 +143,8 @@ export class GameScene extends Phaser.Scene {
     };
     if (this.events.once) this.events.once("shutdown", cleanup);
     else this.events.on("shutdown", cleanup);
+
+    this.mobileUI = new MobileUI(this);
   }
 
   update(time, delta) {
