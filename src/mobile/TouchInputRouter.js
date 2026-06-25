@@ -26,6 +26,7 @@ export class TouchInputRouter {
 
     // Joystick state
     this._joystickActive = false;
+    this._joystickPointerId = null;
     this._joystickBaseX = 0;
     this._joystickBaseY = 0;
     this._deadZone = 12;
@@ -151,6 +152,18 @@ export class TouchInputRouter {
       this._ultimateBtn.style.top = (h - 90) + "px";
     }
 
+    // Reposition active joystick so it stays pinned to the game coordinate
+    if (this._joystickActive) {
+      const scaleX = rect.width / this.scene.scale.width;
+      const scaleY = rect.height / this.scene.scale.height;
+
+      const left = rect.left + this._joystickBaseX * scaleX;
+      const top = rect.top + this._joystickBaseY * scaleY;
+
+      this._joystickBase.style.left = left + "px";
+      this._joystickBase.style.top = top + "px";
+    }
+
     // Default joystick position (bottom-left area)
     this._defaultJoystickX = 140;
     this._defaultJoystickY = h - 140;
@@ -166,8 +179,10 @@ export class TouchInputRouter {
 
   _handlePointerDown(pointer) {
     if (!this._isInJoystickZone(pointer)) return;
+    if (this._joystickActive) return;
 
     this._joystickActive = true;
+    this._joystickPointerId = pointer.id;
     this._joystickBaseX = pointer.x;
     this._joystickBaseY = pointer.y;
 
@@ -188,24 +203,24 @@ export class TouchInputRouter {
 
   _handlePointerMove(pointer) {
     if (!this._joystickActive) return;
+    if (pointer.id !== this._joystickPointerId) return;
 
     const dx = pointer.x - this._joystickBaseX;
     const dy = pointer.y - this._joystickBaseY;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // Clear previous direction states
-    for (const code of DIRECTION_CODES) this.down.delete(code);
-
     if (dist > this._deadZone) {
       // Determine primary direction
       const absDx = Math.abs(dx);
       const absDy = Math.abs(dy);
+      const newDir = absDx > absDy ? (dx > 0 ? "RIGHT" : "LEFT") : (dy > 0 ? "DOWN" : "UP");
 
-      if (absDx > absDy) {
-        this.down.add(dx > 0 ? "RIGHT" : "LEFT");
-      } else {
-        this.down.add(dy > 0 ? "DOWN" : "UP");
-      }
+      // Track pressed: add to pressed if this direction wasn't already down
+      if (!this.down.has(newDir)) this.pressed.add(newDir);
+
+      // Clear previous direction states and set the new one
+      for (const code of DIRECTION_CODES) this.down.delete(code);
+      this.down.add(newDir);
 
       // Constrain thumb
       const clampedDist = Math.min(dist, this._maxRadius);
@@ -228,9 +243,11 @@ export class TouchInputRouter {
     }
   }
 
-  _handlePointerUp(_pointer) {
+  _handlePointerUp(pointer) {
     if (!this._joystickActive) return;
+    if (pointer.id !== this._joystickPointerId) return;
     this._joystickActive = false;
+    this._joystickPointerId = null;
 
     // Reset joystick visuals
     this._joystickBase.style.display = "none";
@@ -303,5 +320,6 @@ export class TouchInputRouter {
     this.down.clear();
     this.pressed.clear();
     this._joystickActive = false;
+    this._joystickPointerId = null;
   }
 }
