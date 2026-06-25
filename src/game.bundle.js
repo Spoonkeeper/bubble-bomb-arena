@@ -5770,7 +5770,6 @@ const ACTION_CODES = ["BOMB", "ULTIMATE"];
 
 /**
  * Detect whether the current environment is a mobile/touch device.
- * Used by Task 5 to decide whether to create a TouchInputRouter.
  */
 function isMobileDevice() {
   if (typeof window === "undefined") return false;
@@ -5783,7 +5782,7 @@ function isMobileDevice() {
 
 class TouchInputRouter {
   /**
-   * @param {Phaser.Scene} scene - The active Phaser scene (for pointer events and canvas reference).
+   * @param {Phaser.Scene} scene
    */
   constructor(scene) {
     this.scene = scene;
@@ -5795,21 +5794,16 @@ class TouchInputRouter {
     this._joystickPointerId = null;
     this._joystickBaseX = 0;
     this._joystickBaseY = 0;
-    this._deadZone = 12;
-    this._maxRadius = 60; // base radius
+    this._deadZone = 8;       // smaller dead zone for responsiveness
+    this._maxRadius = 40;     // smaller thumb travel (base radius)
 
-    // Canvas reference
     this._canvas = scene.game.canvas;
-
-    // Build DOM overlay
     this._overlay = this._createOverlay();
 
-    // Position overlay to match canvas
     this._syncOverlayRect();
     this._resizeObserver = new ResizeObserver(() => this._syncOverlayRect());
     this._resizeObserver.observe(this._canvas);
 
-    // Bind Phaser pointer events for joystick
     this._onPointerDown = (pointer) => this._handlePointerDown(pointer);
     this._onPointerMove = (pointer) => this._handlePointerMove(pointer);
     this._onPointerUp = (pointer) => this._handlePointerUp(pointer);
@@ -5828,28 +5822,28 @@ class TouchInputRouter {
       "position:absolute;top:0;left:0;width:100%;height:100%;" +
       "pointer-events:none;z-index:10;overflow:hidden;";
 
-    // Joystick base
+    // Joystick base (smaller: 80px)
     this._joystickBase = document.createElement("div");
     this._joystickBase.style.cssText =
-      "position:absolute;display:none;width:120px;height:120px;border-radius:50%;" +
-      "background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.35);" +
+      "position:absolute;display:none;width:80px;height:80px;border-radius:50%;" +
+      "background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.3);" +
       "transform:translate(-50%,-50%);pointer-events:none;";
     overlay.appendChild(this._joystickBase);
 
-    // Joystick thumb
+    // Joystick thumb (smaller: 40px)
     this._joystickThumb = document.createElement("div");
     this._joystickThumb.style.cssText =
-      "position:absolute;width:60px;height:60px;border-radius:50%;" +
-      "background:rgba(255,255,255,0.45);border:2px solid rgba(255,255,255,0.65);" +
+      "position:absolute;width:40px;height:40px;border-radius:50%;" +
+      "background:rgba(255,255,255,0.4);border:2px solid rgba(255,255,255,0.55);" +
       "transform:translate(-50%,-50%);pointer-events:none;";
     this._joystickBase.appendChild(this._joystickThumb);
 
-    // Bomb button (💣)
-    this._bombBtn = this._createActionButton("BOMB", "💣", "rgba(255,80,80,0.55)", "#ff5050");
+    // Bomb button (smaller: 64px)
+    this._bombBtn = this._createActionButton("BOMB", "💣", "rgba(255,68,82,0.5)", "#ff4452");
     overlay.appendChild(this._bombBtn);
 
-    // Ultimate button (⚡)
-    this._ultimateBtn = this._createActionButton("ULTIMATE", "⚡", "rgba(88,232,255,0.55)", "#58e8ff");
+    // Ultimate button (smaller: 64px)
+    this._ultimateBtn = this._createActionButton("ULTIMATE", "⚡", "rgba(88,232,255,0.5)", "#58e8ff");
     overlay.appendChild(this._ultimateBtn);
 
     document.body.appendChild(overlay);
@@ -5860,12 +5854,13 @@ class TouchInputRouter {
     const btn = document.createElement("div");
     btn.setAttribute("data-touch-code", code);
     btn.style.cssText =
-      "position:absolute;width:88px;height:88px;border-radius:50%;" +
+      "position:absolute;width:64px;height:64px;border-radius:50%;" +
       `background:${bg};border:2px solid ${borderColor};` +
       "display:flex;align-items:center;justify-content:center;" +
-      "font-size:36px;line-height:1;user-select:none;" +
+      "font-size:28px;line-height:1;user-select:none;" +
       "pointer-events:auto;touch-action:none;" +
-      "transform:translate(-50%,-50%);";
+      "transform:translate(-50%,-50%);" +
+      "transition: transform 0.08s ease-out;";
     btn.textContent = label;
 
     const onDown = (e) => {
@@ -5873,11 +5868,13 @@ class TouchInputRouter {
       e.stopPropagation();
       if (!this.down.has(code)) this.pressed.add(code);
       this.down.add(code);
+      btn.style.transform = "translate(-50%,-50%) scale(0.85)";
     };
     const onUp = (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.down.delete(code);
+      btn.style.transform = "translate(-50%,-50%) scale(1)";
     };
 
     btn.addEventListener("pointerdown", onDown);
@@ -5885,7 +5882,6 @@ class TouchInputRouter {
     btn.addEventListener("pointerleave", onUp);
     btn.addEventListener("pointercancel", onUp);
 
-    // Store cleanup references
     btn._onDown = onDown;
     btn._onUp = onUp;
 
@@ -5902,45 +5898,36 @@ class TouchInputRouter {
     this._overlay.style.width = rect.width + "px";
     this._overlay.style.height = rect.height + "px";
 
-    // Reposition buttons relative to overlay size
     const w = rect.width;
     const h = rect.height;
 
-    // Bomb button: bottom-right, left side of the two buttons
+    // Buttons at bottom-right edge of overlay
     if (this._bombBtn) {
-      this._bombBtn.style.left = (w - 120) + "px";
-      this._bombBtn.style.top = (h - 90) + "px";
+      this._bombBtn.style.left = (w - 100) + "px";
+      this._bombBtn.style.top = (h - 60) + "px";
     }
-
-    // Ultimate button: bottom-right, right side
     if (this._ultimateBtn) {
       this._ultimateBtn.style.left = (w - 30) + "px";
-      this._ultimateBtn.style.top = (h - 90) + "px";
+      this._ultimateBtn.style.top = (h - 60) + "px";
     }
 
-    // Reposition active joystick so it stays pinned to the game coordinate
+    // Re-anchor active joystick to game coords
     if (this._joystickActive) {
       const scaleX = rect.width / this.scene.scale.width;
       const scaleY = rect.height / this.scene.scale.height;
-
-      const left = rect.left + this._joystickBaseX * scaleX;
-      const top = rect.top + this._joystickBaseY * scaleY;
-
-      this._joystickBase.style.left = left + "px";
-      this._joystickBase.style.top = top + "px";
+      this._joystickBase.style.left = (rect.left + this._joystickBaseX * scaleX) + "px";
+      this._joystickBase.style.top = (rect.top + this._joystickBaseY * scaleY) + "px";
     }
 
-    // Default joystick position (bottom-left area)
-    this._defaultJoystickX = 140;
-    this._defaultJoystickY = h - 140;
+    this._defaultJoystickY = h - 100;
   }
 
   // ── Joystick pointer handling ────────────────────────────────
 
   _isInJoystickZone(pointer) {
+    // Left half of the screen is the joystick zone
     const w = this.scene.scale.width;
-    const h = this.scene.scale.height;
-    return pointer.x < w * 0.35 && pointer.y > h * 0.5;
+    return pointer.x < w * 0.5;
   }
 
   _handlePointerDown(pointer) {
@@ -5952,16 +5939,12 @@ class TouchInputRouter {
     this._joystickBaseX = pointer.x;
     this._joystickBaseY = pointer.y;
 
-    // Position the joystick base at the touch point
     const canvasRect = this._canvas.getBoundingClientRect();
     const scaleX = canvasRect.width / this.scene.scale.width;
     const scaleY = canvasRect.height / this.scene.scale.height;
 
-    const left = canvasRect.left + pointer.x * scaleX;
-    const top = canvasRect.top + pointer.y * scaleY;
-
-    this._joystickBase.style.left = left + "px";
-    this._joystickBase.style.top = top + "px";
+    this._joystickBase.style.left = (canvasRect.left + pointer.x * scaleX) + "px";
+    this._joystickBase.style.top = (canvasRect.top + pointer.y * scaleY) + "px";
     this._joystickBase.style.display = "block";
     this._joystickThumb.style.left = "50%";
     this._joystickThumb.style.top = "50%";
@@ -5975,35 +5958,42 @@ class TouchInputRouter {
     const dy = pointer.y - this._joystickBaseY;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
+    // Clear all directions first
+    for (const code of DIRECTION_CODES) this.down.delete(code);
+
     if (dist > this._deadZone) {
-      // Determine primary direction
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
-      const newDir = absDx > absDy ? (dx > 0 ? "RIGHT" : "LEFT") : (dy > 0 ? "DOWN" : "UP");
+      // 8-direction based on angle for smooth diagonal movement
+      const angle = Math.atan2(dy, dx);
+      const norm = angle < 0 ? angle + Math.PI * 2 : angle;
+      const sector = Math.round(norm / (Math.PI / 4)) % 8;
 
-      // Track pressed: add to pressed if this direction wasn't already down
-      if (!this.down.has(newDir)) this.pressed.add(newDir);
+      const map = [
+        ["RIGHT"],           // 0: →
+        ["RIGHT", "DOWN"],   // 1: ↘
+        ["DOWN"],            // 2: ↓
+        ["LEFT", "DOWN"],    // 3: ↙
+        ["LEFT"],            // 4: ←
+        ["LEFT", "UP"],      // 5: ↖
+        ["UP"],              // 6: ↑
+        ["RIGHT", "UP"],     // 7: ↗
+      ];
+      const newDirs = map[sector];
 
-      // Clear previous direction states and set the new one
-      for (const code of DIRECTION_CODES) this.down.delete(code);
-      this.down.add(newDir);
+      for (const dir of newDirs) {
+        if (!this.down.has(dir)) this.pressed.add(dir);
+        this.down.add(dir);
+      }
 
-      // Constrain thumb
+      // Thumb follows finger proportionally within the max radius
       const clampedDist = Math.min(dist, this._maxRadius);
       const ratio = clampedDist / dist;
-      const thumbDx = dx * ratio;
-      const thumbDy = dy * ratio;
-
-      // Thumb position relative to base center (base is 120px, thumb is 60px)
-      // The thumb is centered inside the base, so we offset from center
-      const baseHalf = 60; // half of 120px base
-      const thumbHalf = 30; // half of 60px thumb
-      const px = baseHalf + thumbDx - thumbHalf;
-      const py = baseHalf + thumbDy - thumbHalf;
-      this._joystickThumb.style.left = px + "px";
-      this._joystickThumb.style.top = py + "px";
+      // Thumb offset from center: 50% ± (thumb travel in percent of base)
+      const pctX = 50 + (dx * ratio / this._maxRadius) * 50;
+      const pctY = 50 + (dy * ratio / this._maxRadius) * 50;
+      this._joystickThumb.style.left = pctX + "%";
+      this._joystickThumb.style.top = pctY + "%";
     } else {
-      // Within dead zone — reset thumb to center
+      // Dead zone — thumb centered
       this._joystickThumb.style.left = "50%";
       this._joystickThumb.style.top = "50%";
     }
@@ -6015,54 +6005,36 @@ class TouchInputRouter {
     this._joystickActive = false;
     this._joystickPointerId = null;
 
-    // Reset joystick visuals
     this._joystickBase.style.display = "none";
     this._joystickThumb.style.left = "50%";
     this._joystickThumb.style.top = "50%";
 
-    // Clear all direction states
     for (const code of DIRECTION_CODES) this.down.delete(code);
   }
 
   // ── Public API (mirrors KeyboardInputRouter) ─────────────────
 
-  /**
-   * Check if any of the given codes is currently held down.
-   * @param {string|string[]} codes
-   * @returns {boolean}
-   */
+  /** @param {string|string[]} codes */
   isDown(codes) {
     return asList(codes).some((code) => this.down.has(code));
   }
 
-  /**
-   * Check if any of the given codes was pressed this frame.
-   * @param {string|string[]} codes
-   * @returns {boolean}
-   */
+  /** @param {string|string[]} codes */
   wasPressed(codes) {
     return asList(codes).some((code) => this.pressed.has(code));
   }
 
-  /**
-   * Clear the pressed set at the end of each frame.
-   */
   endFrame() {
     this.pressed.clear();
   }
 
-  /**
-   * Remove all event listeners and DOM elements.
-   */
   destroy() {
-    // Unbind Phaser pointer events
     if (this.scene && this.scene.input) {
       this.scene.input.off("pointerdown", this._onPointerDown);
       this.scene.input.off("pointermove", this._onPointerMove);
       this.scene.input.off("pointerup", this._onPointerUp);
     }
 
-    // Remove DOM button listeners
     for (const btn of [this._bombBtn, this._ultimateBtn]) {
       if (!btn) continue;
       btn.removeEventListener("pointerdown", btn._onDown);
@@ -6072,17 +6044,14 @@ class TouchInputRouter {
       btn.remove();
     }
 
-    // Remove joystick elements
     if (this._joystickBase) this._joystickBase.remove();
     if (this._overlay) this._overlay.remove();
 
-    // Disconnect ResizeObserver
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
       this._resizeObserver = null;
     }
 
-    // Clear state
     this.down.clear();
     this.pressed.clear();
     this._joystickActive = false;
