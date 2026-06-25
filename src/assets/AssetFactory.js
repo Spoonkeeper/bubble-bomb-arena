@@ -268,6 +268,181 @@ export function createGameTextures(scene) {
   createHomelandEnemies(scene);
   createMapPreview(scene, "map-preview-inferno", 0xff4452, 0x58e8ff, 0x090d12);
   createMapPreview(scene, "map-preview-homeland", 0xcaa14a, 0x5c3712, 0x0a0908);
+
+  // ── Programmatic fallbacks for map-specific texture keys ──
+  // These ensure the game still looks correct even when running from
+  // file:// protocol (where browser blocks PNG loading) or if any
+  // PNG asset fails to load.  Each fallback copies an existing
+  // programmatic texture to the key the map config expects.
+  ensureMapTextureFallbacks(scene);
+}
+
+/**
+ * Copy a source texture to a new key if that key doesn't already exist.
+ * This creates programmatic fallbacks for PNG-only texture keys.
+ */
+function textureFallback(scene, targetKey, sourceKey) {
+  if (scene.textures.exists(targetKey)) return;
+  if (!scene.textures.exists(sourceKey)) return;
+  const src = scene.textures.get(sourceKey).getSourceImage();
+  if (!src) return;
+  const canvas = scene.textures.createCanvas(targetKey, src.width, src.height);
+  if (!canvas || !canvas.context) return;
+  canvas.context.drawImage(src, 0, 0);
+  canvas.refresh();
+}
+
+/**
+ * Ensure all map texture keys referenced in config.js have a texture.
+ * Called after createGameTextures() so the programmatic base textures exist.
+ */
+function ensureMapTextureFallbacks(scene) {
+  // ── Inferno map (v3/v4 keys) ──
+  textureFallback(scene, "inferno-v3-floor-a", "tile-floor-a");
+  textureFallback(scene, "inferno-v3-floor-b", "tile-floor-b");
+  textureFallback(scene, "inferno-v3-wall", "wall-solid");
+  textureFallback(scene, "inferno-v3-box", "box-breakable");
+  textureFallback(scene, "inferno-v3-bomb", "bomb");
+  textureFallback(scene, "inferno-v3-explosion", "explosion");
+  textureFallback(scene, "inferno-v3-orb-energy", "item-energy-orb");
+  textureFallback(scene, "inferno-v3-orb-speed", "item-speed");
+  textureFallback(scene, "inferno-v3-orb-range", "item-range");
+  textureFallback(scene, "inferno-v3-orb-bomb", "item-bomb");
+  textureFallback(scene, "inferno-v3-orb-shield", "item-shield");
+  textureFallback(scene, "inferno-v3-enemy-0", "enemy-bot");
+  textureFallback(scene, "inferno-v3-enemy-1", "enemy-drone");
+  textureFallback(scene, "inferno-v3-enemy-2", "enemy-dummy");
+
+  // Also handle base inferno keys (non-v3 fallback)
+  textureFallback(scene, "inferno-floor-a", "tile-floor-a");
+  textureFallback(scene, "inferno-floor-b", "tile-floor-b");
+  textureFallback(scene, "inferno-wall", "wall-solid");
+  textureFallback(scene, "inferno-box", "box-breakable");
+  textureFallback(scene, "inferno-bomb", "bomb");
+  textureFallback(scene, "inferno-explosion", "explosion");
+  textureFallback(scene, "inferno-orb-energy", "item-energy-orb");
+  textureFallback(scene, "inferno-orb-speed", "item-speed");
+  textureFallback(scene, "inferno-orb-range", "item-range");
+  textureFallback(scene, "inferno-orb-bomb", "item-bomb");
+  textureFallback(scene, "inferno-orb-shield", "item-shield");
+  textureFallback(scene, "inferno-enemy-0", "enemy-bot");
+  textureFallback(scene, "inferno-enemy-1", "enemy-drone");
+  textureFallback(scene, "inferno-enemy-2", "enemy-dummy");
+
+  // ── Homeland map (v3 keys) ──
+  textureFallback(scene, "homeland-v3-floor-a", "homeland-floor-a");
+  textureFallback(scene, "homeland-v3-floor-b", "homeland-floor-b");
+  textureFallback(scene, "homeland-v3-wall", "homeland-wall");
+  textureFallback(scene, "homeland-v3-box", "homeland-box");
+  textureFallback(scene, "homeland-v3-bomb", "homeland-bomb");
+  textureFallback(scene, "homeland-v3-explosion", "explosion");
+  textureFallback(scene, "homeland-v3-orb-energy", "item-energy-orb");
+  textureFallback(scene, "homeland-v3-orb-speed", "item-speed");
+  textureFallback(scene, "homeland-v3-orb-range", "item-range");
+  textureFallback(scene, "homeland-v3-orb-bomb", "item-bomb");
+  textureFallback(scene, "homeland-v3-orb-shield", "item-shield");
+  textureFallback(scene, "homeland-v3-enemy-0", "homeland-enemy-0");
+  textureFallback(scene, "homeland-v3-enemy-1", "homeland-enemy-1");
+  textureFallback(scene, "homeland-v3-enemy-2", "homeland-enemy-2");
+
+  // ── Abyss map ──
+  textureFallback(scene, "abyss-floor-a", "tile-floor-a");
+  textureFallback(scene, "abyss-floor-b", "tile-floor-b");
+  textureFallback(scene, "abyss-wall", "wall-solid");
+  textureFallback(scene, "abyss-bomb-blackhole", "bomb");
+  textureFallback(scene, "abyss-explosion", "explosion");
+  textureFallback(scene, "abyss-orb-energy", "item-energy-orb");
+  textureFallback(scene, "abyss-orb-speed", "item-speed");
+  textureFallback(scene, "abyss-orb-range", "item-range");
+  textureFallback(scene, "abyss-orb-bomb", "item-bomb");
+  textureFallback(scene, "abyss-orb-shield", "item-shield");
+  textureFallback(scene, "abyss-enemy-0", "enemy-bot");
+  textureFallback(scene, "abyss-enemy-1", "enemy-drone");
+  textureFallback(scene, "abyss-enemy-2", "enemy-dummy");
+
+  // ── Abyss portal textures (create simple colored circles) ──
+  createPortalTexture(scene, "abyss-portal-purple-idle", 0x9a7cff, false);
+  createPortalTexture(scene, "abyss-portal-purple-open", 0x9a7cff, true);
+  createPortalTexture(scene, "abyss-portal-gold-idle", 0xffad45, false);
+  createPortalTexture(scene, "abyss-portal-gold-open", 0xffad45, true);
+
+  // ── Map preview for abyss ──
+  createMapPreview(scene, "map-preview-abyss", 0x9a7cff, 0x58e8ff, 0x070b12);
+
+  // ── Map preview for abyss ──
+  createMapPreview(scene, "map-preview-abyss", 0x9a7cff, 0x58e8ff, 0x070b12);
+
+  // ── UI background fallbacks (for file:// mode) ──
+  createMenuBgFallback(scene, "menu-hero-ensemble-v1", 0x03070d, 0xff4452);
+  createMenuBgFallback(scene, "menu-spoon-wallpaper-v2", 0x061016, 0x58e8ff);
+
+  // ── Result art fallbacks ──
+  HEROES.forEach((hero) => {
+    createResultArtFallback(scene, `result-${hero.id}-win-v1`, hero.accent, "WIN");
+    createResultArtFallback(scene, `result-${hero.id}-lose-v1`, 0x444444, "LOSE");
+  });
+
+  // ── Shadow-hero sheet fallback (generate hero textures if sheet missing) ──
+  // This is already handled inside createShadowHeroTextures().
+}
+
+/**
+ * Draw a simple dark background with radial glow as fallback for menu wallpapers.
+ */
+function createMenuBgFallback(scene, key, bgColor, accent) {
+  if (scene.textures.exists(key)) return;
+  const g = scene.add.graphics();
+  const w = 1280;
+  const h = 760;
+  // Fill solid background
+  g.fillStyle(bgColor, 1);
+  g.fillRect(0, 0, w, h);
+  // Radial glow accent
+  g.fillStyle(accent, 0.08);
+  g.fillCircle(w / 2, h / 2, 400);
+  // Scan-line hint
+  g.lineStyle(1, accent, 0.04);
+  for (let y = 0; y < h; y += 8) {
+    g.lineBetween(0, y, w, y);
+  }
+  g.generateTexture(key, w, h);
+  g.destroy();
+}
+
+/**
+ * Draw a simple result banner as fallback for hero result art.
+ */
+function createResultArtFallback(scene, key, color, label) {
+  if (scene.textures.exists(key)) return;
+  const g = scene.add.graphics();
+  const w = 280;
+  const h = 200;
+  g.fillStyle(0x081116, 1);
+  g.fillRoundedRect(0, 0, w, h, 16);
+  g.lineStyle(3, color, 0.7);
+  g.strokeRoundedRect(2, 2, w - 4, h - 4, 15);
+  g.fillStyle(color, 0.2);
+  g.fillCircle(w / 2, h / 2, 60);
+  g.generateTexture(key, w, h);
+  g.destroy();
+}
+function createPortalTexture(scene, key, color, isOpen) {
+  if (scene.textures.exists(key)) return;
+  const g = scene.add.graphics();
+  const size = 40;
+  // Outer glow
+  g.fillStyle(color, isOpen ? 0.9 : 0.45);
+  g.fillCircle(size / 2, size / 2, size / 2 - 2);
+  // Inner ring
+  g.lineStyle(3, 0xffffff, isOpen ? 0.8 : 0.3);
+  g.strokeCircle(size / 2, size / 2, size / 4);
+  if (isOpen) {
+    // Bright center for open portal
+    g.fillStyle(0xffffff, 0.6);
+    g.fillCircle(size / 2, size / 2, size / 6);
+  }
+  g.generateTexture(key, size, size);
+  g.destroy();
 }
 
 export function createMenuMascotTexture(scene, sourceKey, textureKey) {
