@@ -1,0 +1,40 @@
+# Runtime logs and temporary visual checks
+server*.log
+tmp-*.png
+*.tmp
+
+# Editor and operating-system noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Agent config (not part of the project)
+.reasonix/
+
+# Source / alpha sprite sheets (not loaded at runtime)
+assets/*-alpha*.png
+assets/*-source*.png
+
+# Raw / unreferenced development assets
+assets/ember-*-raw.png
+assets/ember-raze-*.png
+assets/start-menu-*.png
+assets/row*-col*.png
+assets/abyss-assets-contact.png
+assets/*-orb-core.png
+
+# Unreferenced old map previews
+assets/map-preview-abyss-v1.png
+assets/map-preview-abyss-v2.png
+
+# Superseded v3 assets (v4 versions are used instead)
+assets/inferno-v3-*.png
+assets/homeland-v3-*.png
+
+# Personal documents
+tools/实践环节心得报告_许维金.docx
+
+# Local tool caches
+.tools/
+node_modules/
