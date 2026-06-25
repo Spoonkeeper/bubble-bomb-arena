@@ -16,6 +16,7 @@ import { UISystem } from "../systems/UISystem.js";
 import { CombatantRegistry } from "../multiplayer/CombatantRegistry.js";
 import { KeyboardInputRouter, createInputProfiles } from "../multiplayer/KeyboardInputRouter.js";
 import { TouchInputRouter, isMobileDevice } from "../mobile/TouchInputRouter.js";
+import { MobileUI } from "../mobile/MobileUI.js";
 import { normalizeMatchConfig } from "../multiplayer/MatchConfig.js";
 import {
   GAME_TEXT,
@@ -142,6 +143,8 @@ export class GameScene extends Phaser.Scene {
     };
     if (this.events.once) this.events.once("shutdown", cleanup);
     else this.events.on("shutdown", cleanup);
+
+    this.mobileUI = new MobileUI(this);
   }
 
   update(time, delta) {

@@ -26,6 +26,8 @@ const orderedFiles = [
   "systems/PortalSystem.js",
   "scenes/SceneFlow.js",
   "systems/UISystem.js",
+  "mobile/TouchInputRouter.js",
+  "mobile/MobileUI.js",
   "scenes/StartScene.js",
   "scenes/MatchSetupScene.js",
   "scenes/MapSelectScene.js",
