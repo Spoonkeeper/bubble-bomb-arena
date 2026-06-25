@@ -76,7 +76,7 @@ body {
 
 /* ===== PWA 移动端适配 ===== */
 
-/* 触摸设备：防止误触选中/长按菜单/拖拽 */
+/* 触摸设备：防止误触选中/长按菜单/拖拽 + 全屏沉浸 */
 @media (pointer: coarse) {
   * {
     -webkit-touch-callout: none;
@@ -85,11 +85,43 @@ body {
     -webkit-tap-highlight-color: transparent;
   }
 
+  html,
   body {
-    touch-action: manipulation;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     position: fixed;
     inset: 0;
+    background: #09171c !important; /* 去掉桌面端的渐变背景，手机纯黑沉浸 */
+    touch-action: manipulation;
+  }
+
+  .app-shell {
+    padding: 0;
+    border-radius: 0;
+  }
+
+  #game-root {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh;
+    aspect-ratio: auto;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: #09171c;
+  }
+
+  #game-root canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 }
 
