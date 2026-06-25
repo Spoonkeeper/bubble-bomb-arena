@@ -31,6 +31,13 @@ export class StartScene extends Phaser.Scene {
     this.techOverlay = addTechOverlay(this, 80, 0.94);
     this.ambientScan = addAmbientTechMotion(this, 18);
     this.input.keyboard.once("keydown-ENTER", () => this.beginDeployment());
+
+    // 移动端：点击画布任意位置即开始
+    if (typeof window !== "undefined" && "ontouchstart" in window) {
+      this.input.once("pointerdown", () => {
+        if (!this.isDeploying) this.beginDeployment();
+      });
+    }
   }
 
   drawHeroKeyArt() {

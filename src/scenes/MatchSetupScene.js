@@ -50,6 +50,15 @@ export class MatchSetupScene extends Phaser.Scene {
     this.drawActions();
     this.refresh();
     this.input.keyboard.once("keydown-ENTER", () => this.confirm());
+
+    // 移动端：所有按钮已通过 setInteractive + pointerdown 支持触摸操作
+    // 额外添加底部右侧触摸热区作为 Enter 键的移动端替代
+    if (typeof window !== "undefined" && "ontouchstart" in window) {
+      const mobileConfirmZone = this.add.rectangle(900, 704, 440, 90, 0x000000, 0)
+        .setDepth(9)
+        .setInteractive();
+      mobileConfirmZone.on("pointerdown", () => this.confirm());
+    }
   }
 
   drawBackdrop() {

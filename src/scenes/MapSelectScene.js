@@ -57,6 +57,15 @@ export class MapSelectScene extends Phaser.Scene {
     this.refreshSelection();
 
     this.input.keyboard.once("keydown-ENTER", () => this.enterSelectedMap());
+
+    // 移动端：所有卡片/按钮已通过 setInteractive + pointerdown 支持触摸操作
+    // 额外添加底部中央触摸热区作为 Enter 键的移动端替代
+    if (typeof window !== "undefined" && "ontouchstart" in window) {
+      const mobileConfirmZone = this.add.rectangle(640, 668, 450, 100, 0x000000, 0)
+        .setDepth(9)
+        .setInteractive();
+      mobileConfirmZone.on("pointerdown", () => this.enterSelectedMap());
+    }
   }
 
   drawBackdrop() {
