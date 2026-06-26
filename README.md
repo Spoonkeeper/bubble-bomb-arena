@@ -1,8 +1,12 @@
 # 💣 炸爽彬彬堂 — Bubble Bomb Arena
 
-**原创 2D 俯视角 Q 版泡泡炸弹对战游戏** — HTML5 + Phaser 3
+> **HTML5 2D 泡泡炸弹对战游戏** — 选英雄、放炸弹、炸对手！
+>
+> 🦸 4 位独特英雄（各有大招） · 🗺️ 3 张风格地图 · 🤖 智能 AI · 👥 本地双人
+>
+> 📱 [**在线试玩**](https://spoonkeeper.github.io/bubble-bomb-arena/)　·　[**下载 APK**](https://github.com/Spoonkeeper/bubble-bomb-arena/releases/latest)
 
-> 选英雄、放炸弹、炸对手！4 位独特英雄 × 3 张风格各异的地图，支持单挑 AI 或本地双人对战。
+**原创 2D 俯视角 Q 版泡泡炸弹对战游戏** — HTML5 + Phaser 3，支持单挑 AI 或本地双人对战。
 
 ---
 
