@@ -2,21 +2,26 @@
   "name": "炸爽彬彬堂 - 泡泡炸弹对战",
   "short_name": "炸爽彬彬堂",
   "description": "选英雄、放炸弹、炸对手！4位英雄×3张地图的本地泡泡炸弹竞技游戏",
-  "start_url": "./index.html",
+  "start_url": "/bubble-bomb-arena/",
+  "scope": "/bubble-bomb-arena/",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#09171c",
   "theme_color": "#09171c",
+  "lang": "zh-CN",
+  "categories": ["games", "entertainment"],
   "icons": [
     {
       "src": "./assets/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "./assets/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
